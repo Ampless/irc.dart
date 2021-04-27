@@ -10,7 +10,7 @@ typedef EventFilter<T> = bool Function(T event);
 
 /// A Cancelable Event
 abstract class Cancelable {
-  bool _isCanceled;
+  bool _isCanceled = false;
 
   /// Checks if this event has been canceled.
   bool get isCanceled => _isCanceled;
@@ -33,9 +33,9 @@ class DeadEvent {
 class EventDispatcher {
   /// Default Event Handler Priority
   final int defaultPriority;
-  final int dispatcherId;
+  final int? dispatcherId;
   final _handlers = <Type, List<_EventHandler>>{};
-  
+
   /// Creates a new Event Dispatcher.
   ///
   /// If [defaultPriority] is specified, it will be the priority
@@ -47,7 +47,7 @@ class EventDispatcher {
   /// listener. If the specific [handler] has a priority, it should be provided as well.
   /// Returns whether the [handler] was removed or not.
   bool unregister<T>(EventHandlerFunction<T> handler,
-      {EventFilter filter = _defaultFilter, int priority}) {
+      {EventFilter filter = _defaultFilter, int? priority}) {
     priority ??= defaultPriority;
 
     var name = _getName(handler);
@@ -57,9 +57,9 @@ class EventDispatcher {
     }
 
     var h = _EventHandler(handler, filter, priority);
-    _EventHandler fh;
+    _EventHandler? fh;
 
-    for (var mh in _handlers[name]) {
+    for (var mh in _handlers[name]!) {
       if (mh == h) {
         fh = mh;
         break;
@@ -67,8 +67,8 @@ class EventDispatcher {
     }
 
     if (fh != null) {
-      _handlers[name].remove(fh);
-      _handlers[name].sort((_EventHandler a, _EventHandler b) {
+      _handlers[name]!.remove(fh);
+      _handlers[name]!.sort((a, b) {
         return b.priority.compareTo(a.priority);
       });
       return true;
@@ -92,8 +92,8 @@ class EventDispatcher {
   ///
   /// Returns false if [method] is already registered, otherwise true.
   bool register<T>(EventHandlerFunction<T> handler,
-      {EventFilter filter = _defaultFilter,
-      int priority,
+      {EventFilter<T> filter = _defaultFilter,
+      int? priority,
       bool always = false}) {
     priority ??= defaultPriority;
 
@@ -101,7 +101,7 @@ class EventDispatcher {
     if (!_handlers.containsKey(name)) {
       _handlers[name] = <_EventHandler>[];
     }
-    var handlers = _handlers[name];
+    var handlers = _handlers[name]!;
 
     var h = _EventHandler(handler, filter, priority, null, always);
     if (handlers.any((it) => it == h)) {
@@ -149,13 +149,7 @@ class EventDispatcher {
       };
       var filter = sub.filter;
 
-      filter ??= (e) {
-          if (sub.when != null) {
-            return !sub.when(e);
-          } else {
-            return false;
-          }
-        };
+      filter ??= (e) => !(sub.when ?? (e) => true)(e);
 
       var priority = sub.priority ?? defaultPriority;
 
@@ -163,12 +157,11 @@ class EventDispatcher {
         _handlers[name] = <_EventHandler>[];
       }
 
-      var handlers = _handlers[name];
+      var handlers = _handlers[name]!;
       var h = _EventHandler(handler, filter, priority, object, sub.always);
 
       handlers.add(h);
-      handlers.sort((_EventHandler a, _EventHandler b) =>
-          b.priority.compareTo(a.priority));
+      handlers.sort((a, b) => b.priority.compareTo(a.priority));
       registered = true;
     }
 
@@ -210,7 +203,7 @@ class EventDispatcher {
       }
     }
 
-    var handlers = _handlers[name];
+    var handlers = _handlers[name]!;
     var executed = false;
 
     for (var handler in handlers) {
@@ -251,7 +244,7 @@ class _EventHandler {
   final Function function;
   final Function filter;
   final int priority;
-  final Object object;
+  final Object? object;
   final bool always;
 
   _EventHandler(this.function, this.filter, this.priority,

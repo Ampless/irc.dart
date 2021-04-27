@@ -27,9 +27,9 @@ class Channel extends Entity {
 
   /// Channel Owners (Not Supported on all Servers)
   final Set<User> owners = <User>{};
-  
+
   /// Channel topic
-  String _topic;
+  String? _topic;
 
   /// Banned Hostmasks
   final List<GlobHostmask> bans = [];
@@ -38,10 +38,10 @@ class Channel extends Entity {
   final Mode mode = Mode.empty();
 
   /// Channel topic
-  String get topic => _topic;
+  String get topic => _topic!;
 
   /// User who changed the topic last.
-  String get topicUser => _topicUser;
+  String? get topicUser => _topicUser;
 
   /// Change the topic for the Channel.
   set topic(String topic) {
@@ -49,15 +49,15 @@ class Channel extends Entity {
       var max = client.supported['TOPICLEN'];
       if (topic.length > max) {
         throw ArgumentError.value(topic,
-            'length is >${max}, which is the maximum topic length set by the server.');
+            'length is >$max, which is the maximum topic length set by the server.');
       }
     }
 
-    client.send('TOPIC ${name} :${topic}');
+    client.send('TOPIC $name :$topic');
   }
 
   /// User who changed the topic last.
-  String _topicUser;
+  String? _topicUser;
 
   /// Invite a user to the Channel.
   void invite(User user) {
@@ -66,7 +66,8 @@ class Channel extends Entity {
 
   /// Get all users for the Channel.
   Set<User> get allUsers {
-    var all = <User>{}   ..addAll(ops)
+    var all = <User>{}
+      ..addAll(ops)
       ..addAll(voices)
       ..addAll(members)
       ..addAll(owners)
@@ -102,10 +103,10 @@ class Channel extends Entity {
   void unban(User user) => setMode('-b', user);
 
   /// Kicks [user] from channel with optional [reason].
-  void kick(User user, [String reason]) => client.kick(this, user, reason);
+  void kick(User user, [String? reason]) => client.kick(this, user, reason);
 
   /// Sets +b on [user] then kicks [user] with the specified [reason]
-  void kickban(User user, [String reason]) {
+  void kickban(User user, [String? reason]) {
     ban(user);
     kick(user, reason);
   }
@@ -126,11 +127,11 @@ class Channel extends Entity {
   }
 
   /// Sets the Mode on the Channel or if the user if [user] is specified.
-  void setMode(String mode, [User user]) {
+  void setMode(String mode, [User? user]) {
     if (user == null) {
-      client.send('MODE ${name} ${mode}');
+      client.send('MODE $name $mode');
     } else {
-      client.send('MODE ${name} ${mode} ${user}');
+      client.send('MODE $name $mode $user');
     }
   }
 
@@ -171,12 +172,12 @@ class Channel extends Entity {
       name == object.name;
 
   Future<Mode> getMode() async {
-    client.send('MODE ${name}', now: true);
+    client.send('MODE $name', now: true);
     await Future.delayed(const Duration(seconds: 2));
     return mode;
   }
 
   void reloadTopic() {
-    client.send('TOPIC ${name}');
+    client.send('TOPIC $name');
   }
 }

@@ -11,11 +11,9 @@ abstract class IrcConnection {
 }
 
 class SocketIrcConnection extends IrcConnection {
-  Stream<String> _lines;
-  Socket _socket;
+  Stream<String>? _lines;
+  Socket? _socket;
   bool _done = false;
-
-  final List<String> _queue = <String>[];
 
   @override
   Future connect(Configuration config) async {
@@ -34,7 +32,7 @@ class SocketIrcConnection extends IrcConnection {
     _socket = socket;
 
     _done = false;
-    unawaited(_socket.done.then((_) {
+    unawaited(_socket!.done.then((_) {
       _done = true;
     }));
     return socket;
@@ -42,12 +40,12 @@ class SocketIrcConnection extends IrcConnection {
 
   @override
   Stream<String> lines() {
-    _lines ??= _socket
-          .cast<List<int>>()
-          .transform(const Utf8Decoder(allowMalformed: true))
-          .transform(const LineSplitter());
+    _lines ??= _socket!
+        .cast<List<int>>()
+        .transform(const Utf8Decoder(allowMalformed: true))
+        .transform(const LineSplitter());
 
-    return _lines;
+    return _lines!;
   }
 
   @override
@@ -56,8 +54,8 @@ class SocketIrcConnection extends IrcConnection {
       return Future.value();
     }
     _lines = null;
-    var future = _socket.close();
-    _socket.destroy();
+    var future = _socket!.close();
+    _socket!.destroy();
     _done = true;
     return future;
   }
@@ -65,30 +63,27 @@ class SocketIrcConnection extends IrcConnection {
   @override
   void send(String line) {
     if (!_done) {
-      _socket.writeln(line);
+      _socket!.writeln(line);
     }
   }
 
   @override
   Future initiateTlsConnection(Configuration config) async {
-    _socket = await SecureSocket.secure(_socket, onBadCertificate: (cert) {
-      if (config.allowInvalidCertificates) {
-        return true;
-      }
-      return false;
+    _socket = await SecureSocket.secure(_socket!, onBadCertificate: (cert) {
+      return config.allowInvalidCertificates;
     });
 
     _lines = null;
 
     _done = false;
-    unawaited(_socket.done.then((_) {
+    unawaited(_socket!.done.then((_) {
       _done = true;
     }));
   }
 }
 
 class WebSocketIrcConnection extends IrcConnection {
-  WebSocket _socket;
+  WebSocket? _socket;
 
   @override
   Future connect(Configuration config) async {
@@ -103,18 +98,18 @@ class WebSocketIrcConnection extends IrcConnection {
 
   @override
   Future disconnect() async {
-    await _socket.close(WebSocketStatus.normalClosure, 'IRC disconnect.');
+    await _socket!.close(WebSocketStatus.normalClosure, 'IRC disconnect.');
   }
 
   @override
   Stream<String> lines() {
-    return _socket.where((e) => e is String).cast<String>().map((String line) {
+    return _socket!.where((e) => e is String).cast<String>().map((line) {
       return line.substring(0, line.length - 2);
     });
   }
 
   @override
   void send(String line) {
-    _socket.add('${line}\r\n');
+    _socket!.add('$line\r\n');
   }
 }

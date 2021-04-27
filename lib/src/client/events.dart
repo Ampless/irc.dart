@@ -6,7 +6,7 @@ abstract class Event {
   Client client;
 
   bool isBatched = false;
-  String batchId;
+  String? batchId;
 
   Event(this.client);
 }
@@ -105,14 +105,10 @@ class LineReceiveEvent extends Event {
   /// Line from the Server
   String line;
 
-  Message _message;
+  Message? _message;
 
   Message get message {
-    if (_message != null) {
-      return _message;
-    } else {
-      return _message = client.parser.convert(line);
-    }
+    return _message ??= client.parser.convert(line);
   }
 
   LineReceiveEvent(Client client, this.line) : super(client);
@@ -157,7 +153,7 @@ class MessageEvent extends Event {
   String message;
 
   /// Message Intent
-  String intent;
+  String? intent;
 
   MessageEvent(Client client, this.from, this.target, this.message,
       {this.intent})
@@ -177,13 +173,13 @@ class MessageEvent extends Event {
   /// If this event is a private message
   bool get isPrivate => target.isUser;
 
-  Channel get channel => target.isChannel ? target as Channel : null;
+  Channel? get channel => target.isChannel ? target as Channel : null;
 }
 
 /// Notice Event is dispatched when a notice is received
 class NoticeEvent extends MessageEvent {
   /// Returns whether the notice is from the system or not.
-  bool get isSystem => from != null && from.isServer;
+  bool get isSystem => from.isServer;
 
   bool get isServer => isSystem;
 
@@ -209,8 +205,8 @@ class JoinEvent extends Event {
   /// User who joined
   String user;
 
-  String username;
-  String realname;
+  String? username;
+  String? realname;
 
   bool get isExtended => realname != null;
   bool get isRegistered => username != '*';
@@ -277,10 +273,10 @@ class DisconnectEvent extends Event {
 /// Error Event is dispatched when there is any error in the Client or Server
 class ErrorEvent extends Event {
   /// Error Message
-  String message;
+  String? message;
 
   /// Error Object (possibly null)
-  Error err;
+  Error? err;
 
   /// Type of Error
   String type;
@@ -292,13 +288,13 @@ class ErrorEvent extends Event {
 /// Mode Event is dispatched when we are notified of a mode change
 class ModeEvent extends Event {
   /// Channel we received the change from (possibly null)
-  Channel channel;
+  Channel? channel;
 
   /// Mode that was changed
   ModeChange mode;
 
   /// User the mode was changed on
-  String user;
+  String? user;
 
   bool get isClient => user == client.nickname;
   bool get hasChannel => channel != null;
@@ -313,14 +309,11 @@ class LineSentEvent extends Event {
   /// Line that was sent
   String line;
 
-  Message _message;
+  Message? _message;
 
   Message get message {
-    if (_message != null) {
-      return _message;
-    } else {
-      return _message = client.parser.convert(line);
-    }
+    _message ??= client.parser.convert(line);
+    return _message!;
   }
 
   LineSentEvent(Client client, this.line) : super(client);
@@ -335,10 +328,10 @@ class TopicEvent extends Event {
   String topic;
 
   /// The old Topic.
-  String oldTopic;
+  String? oldTopic;
 
   /// The User
-  User user;
+  User? user;
 
   bool isChange;
 
@@ -347,7 +340,7 @@ class TopicEvent extends Event {
       : super(client);
 
   void revert() {
-    channel.topic = oldTopic;
+    channel.topic = oldTopic!;
   }
 }
 
@@ -373,7 +366,7 @@ class NotAcknowledgedCapabilitiesEvent extends Event {
 
 class AwayEvent extends Event {
   User user;
-  String message;
+  String? message;
   bool get isAway => message != null;
   bool get isBack => message == null;
 
@@ -460,33 +453,33 @@ class WhoisEvent extends Event {
   bool get isAway => away;
 
   /// If the user is away, then this is the message that was set
-  String get awayMessage => builder.awayMessage;
+  String? get awayMessage => builder.awayMessage;
 
   /// If this user is a server operator
   bool get isServerOperator => builder.isServerOperator;
 
   /// The name of the server this user is on
-  String get serverName => builder.serverName;
+  String? get serverName => builder.serverName;
 
   bool get secure => builder.secure;
 
   /// The Server Information (message) for the server this user is on
-  String get serverInfo => builder.serverInfo;
+  String? get serverInfo => builder.serverInfo;
 
   /// The User's Username
-  String get username => builder.username;
+  String? get username => builder.username;
 
   /// The User's Hostname
-  String get hostname => builder.hostname;
+  String? get hostname => builder.hostname;
 
   /// If the user is idle
   bool get idle => builder.idle;
 
   /// If the user is idle, then this is the amount of time that the user has been idle
-  int get idleTime => builder.idleTime;
+  int? get idleTime => builder.idleTime;
 
   /// The User's Real Name
-  String get realname => builder.realName;
+  String? get realname => builder.realName;
 
   /// The User's Nickname
   String get nickname => builder.nickname;
@@ -524,7 +517,7 @@ class KickEvent extends Event {
   User by;
 
   /// The Reason Given for [by] kicking [user]
-  String reason;
+  String? reason;
 
   KickEvent(Client client, this.channel, this.user, this.by, [this.reason])
       : super(client);
@@ -557,7 +550,7 @@ class MOTDEvent extends Event {
 /// Server ISUPPORT Event
 class ServerSupportsEvent extends Event {
   /// Supported Stuff
-  Map<String, dynamic> supported;
+  late Map<String, dynamic> supported;
 
   ServerSupportsEvent(Client client, String message) : super(client) {
     supported = {};

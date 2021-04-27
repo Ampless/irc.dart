@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 typedef InputChecker<T> = dynamic Function(T value);
 
-main() {
+void main() {
   group('Hostmask', () {
     var inputs = <String, InputChecker<Hostmask>>{
       'samrg472!~deathcraz@I.got.g-lined.cu.cc': (Hostmask it) {
@@ -29,7 +29,7 @@ main() {
     for (var input in inputs.keys) {
       test(input, () {
         var hostmask = Hostmask.parse(input);
-        var checker = inputs[input];
+        var checker = inputs[input]!;
         checker(hostmask);
       });
     }
@@ -72,7 +72,7 @@ main() {
 
     for (var input in inputs.keys) {
       test(input, () {
-        var checker = inputs[input];
+        var checker = inputs[input]!;
         var message = parser.convert(input);
         checker(message);
       });
@@ -92,7 +92,7 @@ main() {
     for (var input in inputs.keys) {
       test(input, () {
         var glob = GlobHostmask(input);
-        for (var against in inputs[input]) {
+        for (var against in inputs[input]!) {
           var matcher = against.startsWith('!') ? isFalse : isTrue;
           expect(glob.matches(against), matcher);
         }

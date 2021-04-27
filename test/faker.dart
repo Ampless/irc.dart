@@ -7,9 +7,8 @@ typedef CommandHandler = void Function(Message message);
 
 class FakeServer {
   RegexIrcParser parser = RegexIrcParser();
-  FakeServerConnection connection;
-  StreamController<String> controller =
-      StreamController<String>.broadcast();
+  FakeServerConnection? connection;
+  StreamController<String> controller = StreamController<String>.broadcast();
   StreamController<String> inputs = StreamController<String>.broadcast();
   Stream<String> get messages => inputs.stream;
 
@@ -17,10 +16,10 @@ class FakeServer {
     connection = FakeServerConnection(this);
 
     controller.stream.listen((msg) {
-      print('Server Sent: ${msg}');
+      print('Server Sent: $msg');
     });
 
-    handleCommand('USER', (String line) {
+    handleCommand('USER', (line) {
       kickOff();
     });
 
@@ -40,7 +39,7 @@ class FakeServer {
 
     handleCommand('PING', (String line) {
       var id = line.split(' ')[1].substring(1);
-      sendServer('PONG :${id}');
+      sendServer('PONG :$id');
     });
   }
 
@@ -56,24 +55,24 @@ class FakeServer {
   }
 
   void process(String line) {
-    print('Server Received: ${line}');
+    print('Server Received: $line');
     inputs.add(line);
   }
 
   void handleCommand(String cmd, void Function(String input) handle) {
-    messages.where((it) => it.startsWith('${cmd} ')).listen(handle);
+    messages.where((it) => it.startsWith('$cmd ')).listen(handle);
   }
 
   void sendServer(String line) {
-    controller.add(':fake.server ${line}');
+    controller.add(':fake.server $line');
   }
 
   void sendUser(String nick, String line) {
-    controller.add(':${nick}!fake@fake.host ${line}');
+    controller.add(':$nick!fake@fake.host $line');
   }
 
   void sendClient(String line) {
-    controller.add(':DartBot!DartBot@fake.client ${line}');
+    controller.add(':DartBot!DartBot@fake.client $line');
   }
 }
 
@@ -108,13 +107,12 @@ class FakeServerConnection extends IrcConnection {
 class Environment {
   Client client;
   FakeServer server;
+
+  Environment({required this.client, required this.server});
 }
 
 Environment createEnvironment() {
   var server = FakeServer();
   var client = Client(Configuration(), connection: server.connection);
-  var env = Environment();
-  env.server = server;
-  env.client = client;
-  return env;
+  return Environment(server: server, client: client);
 }

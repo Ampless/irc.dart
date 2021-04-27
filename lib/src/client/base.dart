@@ -36,7 +36,7 @@ abstract class ClientBase {
   /// Note that this handles long messages. If the length of the message is 454
   /// characters or bigger, it will split it up into multiple messages
   void sendMessage(String target, String message) {
-    var begin = 'PRIVMSG ${target} :';
+    var begin = 'PRIVMSG $target :';
 
     var all = _handleMessageSending(begin, message);
 
@@ -59,7 +59,7 @@ abstract class ClientBase {
       }
     }
 
-    send('NICK ${nickname}');
+    send('NICK $nickname');
   }
 
   /// Splits messages if required.
@@ -97,7 +97,7 @@ abstract class ClientBase {
   /// Note that this handles long messages. If the length of the message is 454
   /// characters or bigger, it will split it up into multiple messages
   void sendNotice(String target, String message) {
-    var begin = 'NOTICE ${target} :';
+    var begin = 'NOTICE $target :';
     var all = _handleMessageSending(begin, message);
     for (var msg in all) {
       send(begin + msg);
@@ -108,7 +108,7 @@ abstract class ClientBase {
   /// When the line would be too long, it will generate a new line.
   void sendAutoSplit(String prefix, List<String> parts,
       [String joinBy = ' ', bool now = false]) {
-    var line = '${prefix}';
+    var line = '$prefix';
     var empty = true;
     while (parts.isNotEmpty) {
       var current = line;
@@ -117,12 +117,12 @@ abstract class ClientBase {
         current += candidate;
         empty = false;
       } else {
-        current += '${joinBy}${candidate}';
+        current += '$joinBy$candidate';
       }
 
       if (current.length > 510) {
         send(line, now: now);
-        line = '${prefix}${candidate}';
+        line = '$prefix$candidate';
       } else {
         line = current;
       }
@@ -142,7 +142,8 @@ abstract class ClientBase {
       {String username = '____DART_PLEASE_INJECT_DEFAULT____',
       String password = 'password',
       String nickserv = 'NickServ',
-      String Function(String user, String password) generateMessage = _nickserv}) {
+      String Function(String user, String password) generateMessage =
+          _nickserv}) {
     if (username == '____DART_PLEASE_INJECT_DEFAULT____') {
       username = config.username;
     }
@@ -151,7 +152,7 @@ abstract class ClientBase {
   }
 
   static String _nickserv(String username, String password) =>
-      'identify ${username} ${password}';
+      'identify $username $password';
 
   /// Sends [line] to the server
   ///
@@ -174,10 +175,10 @@ abstract class ClientBase {
       var max = supported['CHANNELLEN'];
       if (channel.length > max) {
         throw ArgumentError.value(channel,
-            'length is >${max}, which is the maximum channel name length set by the server.');
+            'length is >$max, which is the maximum channel name length set by the server.');
       }
     }
-    send('JOIN ${channel}');
+    send('JOIN $channel');
   }
 
   /// Parts the specified [channel].
@@ -186,10 +187,10 @@ abstract class ClientBase {
       var max = supported['CHANNELLEN'];
       if (channel.length > max) {
         throw ArgumentError.value(channel,
-            'length is >${max}, which is the maximum channel name length set by the server.');
+            'length is >$max, which is the maximum channel name length set by the server.');
       }
     }
-    send('PART ${channel}');
+    send('PART $channel');
   }
 
   /// Disconnects the Client with the specified [reason].
@@ -214,14 +215,12 @@ abstract class ClientBase {
       user = nickname;
     }
 
-    send('MODE ${user} ${mode}');
+    send('MODE $user $mode');
   }
 
-  void knock(String channel, [String message]) {
+  void knock(String channel, [String? message]) {
     if (supported.containsKey('KNOCK') && supported['KNOCK']) {
-      send(message != null
-          ? 'KNOCK ${channel}'
-          : 'KNOCK ${channel} :${message}');
+      send(message != null ? 'KNOCK $channel' : 'KNOCK $channel :$message');
     } else {
       throw UnsupportedError('Knocking is not supported on this server.');
     }
@@ -229,19 +228,18 @@ abstract class ClientBase {
 
   /// Sends [msg] to [target] as a CTCP message
   void sendCTCP(String target, String msg) =>
-      sendMessage(target, '\u0001${msg}\u0001');
+      sendMessage(target, '\u0001$msg\u0001');
 
   /// Sends [msg] to [target] as an action.
-  void sendAction(String target, String msg) =>
-      sendCTCP(target, 'ACTION ${msg}');
+  void sendAction(String target, String msg) => sendCTCP(target, 'ACTION $msg');
 
   /// Kicks [user] from [channel] with an optional [reason].
-  void kick(Channel channel, User user, [String reason]) {
+  void kick(Channel channel, User user, [String? reason]) {
     if (reason != null && supported.containsKey('KICKLEN')) {
       var max = supported['KICKLEN'];
       if (reason.length > max) {
         throw ArgumentError.value(reason,
-            'length is > ${max}, which is the maximum kick comment length set by the server.');
+            'length is > $max, which is the maximum kick comment length set by the server.');
       }
     }
     send(
@@ -249,15 +247,15 @@ abstract class ClientBase {
   }
 
   void loginOperator(String name, String password) {
-    send('OPER ${name} ${password}');
+    send('OPER $name $password');
   }
 
   void invite(User user, String channel) {
-    send('INVITE ${user.nickname} ${channel}');
+    send('INVITE ${user.nickname} $channel');
   }
 
   Future<ServerVersionEvent> getServerVersion([String target]);
-  Future<String> getChannelTopic(String channel);
+  Future<String?> getChannelTopic(String channel);
 
   Future<bool> isUserOn(String name);
 

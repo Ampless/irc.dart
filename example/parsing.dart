@@ -29,9 +29,9 @@ main() {
   load_inputs();
   inputs.forEach((input, checker) {
     if (checker(parser.convert(input))) {
-      print("Successfully Parsed '${input}'");
+      print("Successfully Parsed '$input'");
     } else {
-      print("Failed to Parse '${input}'");
+      print("Failed to Parse '$input'");
       exit(1);
     }
   });

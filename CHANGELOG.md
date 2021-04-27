@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.0.0-hacks.0
+
+- Null-safety
+
 ## 4.0.3
 
 - Code quality updates.

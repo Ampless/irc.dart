@@ -11,10 +11,7 @@ void main(List<String> args) {
   var configs = <Configuration>[];
   for (var i = 1; i <= 10; i++) {
     configs.add(Configuration(
-        nickname: 'DartBot${i}',
-        username: 'DartBot',
-        host: server,
-        port: 6667));
+        nickname: 'DartBot$i', username: 'DartBot', host: server, port: 6667));
   }
   var pool = ClientPool();
   configs.forEach(pool.addClient);

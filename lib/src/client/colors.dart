@@ -30,10 +30,10 @@ class Color {
 
   /// Puts the Color String of [color] in front of [input] and ends with [endColor].
   static String wrap(String input, String color, [String endColor = 'reset']) =>
-      '${forName(color)}${input}${forName(endColor)}';
+      '${forName(color)}$input${forName(endColor)}';
 
   /// Gets a Color by the name of [input]. If no such color exists it returns null.
-  static String forName(String input) {
+  static String? forName(String input) {
     var name = input.replaceAll(' ', '_').toUpperCase();
     var field;
     try {

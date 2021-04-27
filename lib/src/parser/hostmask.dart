@@ -5,16 +5,17 @@ class Hostmask {
   static final HOSTMASK_REGEX = RegExp('[!@]');
 
   /// User's Nickname
-  String nickname;
+  late String nickname;
 
   /// User's Identity
-  String identity;
+  late String identity;
 
   /// User's Hostname
-  String hostname;
+  late String hostname;
 
   /// Creates a Hostmask instance
-  Hostmask({this.nickname, this.identity, this.hostname});
+  Hostmask(
+      {required this.nickname, required this.identity, required this.hostname});
 
   /// Creates a Hostmask from the parsed [input].
   Hostmask.parse(String input) {

@@ -9,15 +9,10 @@ class RegexIrcParser extends IrcParser {
   @override
   Message convert(String line) {
     line = line.trimLeft();
-    List<String> match;
+    List<String?> match;
     {
-      var parsed = kLinePattern.firstMatch(line);
-
-      if (parsed == null) {
-        return null;
-      }
-
-      match = List<String>.generate(parsed.groupCount + 1, parsed.group);
+      var parsed = kLinePattern.firstMatch(line)!;
+      match = List<String?>.generate(parsed.groupCount + 1, parsed.group);
     }
 
     var tagStuff = match[1];
@@ -35,8 +30,8 @@ class RegexIrcParser extends IrcParser {
     return Message(
         line: line,
         hostmask: hostmask,
-        command: command,
-        message: msg,
+        command: command!,
+        message: msg!,
         parameters: parameters,
         tags: tags);
   }
